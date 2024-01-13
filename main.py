@@ -1,5 +1,6 @@
 import time
 import random
+import numpy as np
 
 import torch
 import torch.autograd as autograd
@@ -15,14 +16,16 @@ from dataset import TextLoader
 from model_architecture import LSTMClassifier
 from train_and_evaluation import train_model, evaluate_test_set, evaluate_validation_set
 
+import matplotlib.pyplot as plt
+
 data_dir='Surnames'
 hidden_dim=32           # can be tuned
 batch_size=32
-num_epochs=15
+num_epochs=20
 char_dim=128
 learning_rate=0.01
 weight_decay=1e-4
-seed=12
+seed=123
 
 random.seed(seed)
 # NEED A MORE CAREFUL DIVISION IN TRAIN AND TEST DATASET
@@ -54,7 +57,19 @@ model = LSTMClassifier(char_vocab_size, char_dim, hidden_dim=hidden_dim,
                        output_size=len(tag_vocab))
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
-model = train_model(model, optimizer, train_data, dev_data, char_vocab, tag_vocab, 
+model, train_losses, val_losses = train_model(model, optimizer, train_data, dev_data, char_vocab, tag_vocab, 
                     batch_size, num_epochs)
+
+fig, ax = plt.subplots()
+x_axis_epochs = np.linspace(0,num_epochs-1, num=num_epochs, dtype=int).tolist()
+plt.plot(x_axis_epochs, train_losses, label = "Training loss") 
+plt.plot(x_axis_epochs, val_losses, label = "Validation loss") 
+plt.legend() 
+ax.set_xlabel("Epochs")
+ax.set_ylabel("Losses")
+
+ax.set_xlim(0, num_epochs-1)
+
+plt.show()
 
 evaluate_test_set(model, test_data, char_vocab, tag_vocab)

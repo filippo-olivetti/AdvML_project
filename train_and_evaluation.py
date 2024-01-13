@@ -29,9 +29,11 @@ def train_model(model, optimizer, train, dev, x_to_ix, y_to_ix, batch_size, max_
     # dev
     # x_to_ix
     # y_to_ix
+    train_losses = []
+    val_losses = []
     criterion = nn.NLLLoss(reduction='sum')
     for epoch in range(max_epochs):
-        print('Epoch:', epoch)
+        print('Epoch:', epoch+1)
         y_true = list()
         y_pred = list()
         total_loss = 0
@@ -50,7 +52,9 @@ def train_model(model, optimizer, train, dev, x_to_ix, y_to_ix, batch_size, max_
         val_loss, val_acc = evaluate_validation_set(model, dev, x_to_ix, y_to_ix, criterion)
         print("Train loss: {} - acc: {} \nValidation loss: {} - acc: {}".format(total_loss.data.float()/len(train), acc,
                                                                                 val_loss, val_acc))
-    return model
+        train_losses.append(total_loss.data.float()/len(train))
+        val_losses.append(val_loss)
+    return model, train_losses, val_losses
 
 
 def evaluate_validation_set(model, devset, x_to_ix, y_to_ix, criterion):
